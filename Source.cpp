@@ -1,58 +1,57 @@
 #include <iostream>
 #include <conio.h>
-#include <windows.h>
 using namespace std;
 
-bool gameOver;
-const int width = 30, height = 30;
-enum direction { stop = 0, Up, Left, Right, Down };
-int headX, headY, fruitX, fruitY, score;
-int tailX[100], tailY[100];
+bool GameOver;
+const int wall_wdth = 30;
+const int wall_hght = 20;
+int headx = 0, heady = 0;
+int fruitx = 0, fruity = 0, score = 0;
+char wall = '#';
+enum direction { stop = 0, Left, Right, Up, Down };
+direction dir = stop;
+int tailx[100], taily[100];
+int prevx, prev2x, prevy, prev2y;
 int ntail;
-direction dir;
 void setup()
 {
-	gameOver = false;
-	dir = stop;
-	headX = width / 2;
-	headY = width / 2;
-	fruitX = rand() % width;
-	fruitY = rand() % height;
-	score = 0;
-
+	GameOver = false;
+	headx = wall_wdth / 2;
+	heady = wall_hght / 2;
+	fruitx = rand() % (wall_wdth - 5);
+	fruity = rand() % (wall_hght - 5);
 }
 
-void Draw()
+void Map() 
 {
 	system("cls");
-	for (int i = 0;i < width + 1;++i)
+	for (int i = 0;i < wall_wdth + 3;++i)
 	{
-		cout << "#";
+		cout << wall ;
 	}
-	cout << endl;
 
-	for (int i = 0; i < height;++i)
+	for (int y = 0; y < wall_hght;++y)
 	{
-		for (int j = 0; j < width; ++j)
+		for (int x = 0; x < wall_wdth + 3;x++)
 		{
-			if (j == 0)
+			if (x == 0 || x == wall_wdth + 2)
 			{
-				cout << "#";
+				cout << wall;
 			}
-			if (i == headY && j == headX)
+			if (headx == x && heady == y)
 			{
 				cout << "0";
 			}
-			else if (i == fruitY && j == fruitX)
+			else if (fruitx == x && fruity == y)
 			{
 				cout << "F";
 			}
 			else
 			{
 				bool print = false;
-				for (int k = 0; k < ntail; ++i)
+				for (int t = 0; t < ntail; ++t)
 				{
-					if (tailX[k] == j && tailY[k] == i)
+					if (tailx[t] == x && taily[t] == y)
 					{
 						cout << "o";
 						print = true;
@@ -63,106 +62,104 @@ void Draw()
 					cout << " ";
 				}
 			}
-			if (j == width - 1)
-				cout << "#";
-		}
-		cout << endl;
-	}
+			
+		}cout << endl;
+	}cout << endl;
+	cout << endl << "Score: " << score;
 
-	for (int i = 0;i < width + 1;++i)
+	for (int i = 0;i < wall_wdth + 3;++i)
 	{
-		cout << "#";
+		cout << wall;
 	}
-	cout << endl;
-	cout << endl << "score: " << score;
 }
 
-void Logic()
+void Input()
 {
-	int prevX = tailX[0];
-	int prevY = tailY[0];
-	int prev2X, prev2Y;
-	tailX[0] = headX;
-	tailY[0] = headY;
-	for (int i = 1;i < ntail;++i)
-	{
-		prev2X = tailX[i];
-		prev2Y = tailY[i];
-		tailX[i] = prevX;
-		tailY[i] = prevY;
-		prevX = prev2X;
-		prevY = prev2Y;
-
-	}
-	switch (dir)
-	{
-	case Left:
-		headX--;
-		break;
-	case Right:
-		headX++;
-		break;
-	case Up:
-		headY--;
-		break;
-	case Down:
-		headY++;
-		break;
-	default:
-		break;
-	}
-	if (headX >= width || headX <= 0 || headY >= width || headY <= 0)
-	{
-		gameOver = true;
-	}
-	for (int i = 0;i < ntail;++i)
-	{
-		if (tailX[i] == headX && tailY[i] == headY)
-			gameOver = true;
-	}
-	if (headX == fruitX && headY == fruitY)
-	{
-
-		fruitX = rand() % width;
-		fruitY = rand() % height;
-		score += 10;
-		ntail++;
-	}
-}
-
-void input() {
 	if (_kbhit())
 	{
-		switch (_getch())
+		switch (_getch()) 
 		{
-		case 'a':
-			dir = Left;
-			break;
-		case 'd':
-			dir = Right;
-			break;
 		case 'w':
 			dir = Up;
 			break;
 		case 's':
 			dir = Down;
 			break;
-		case 'k':
-			gameOver = true;
+		case 'a':
+			dir = Left;
 			break;
+		case 'd':
+			dir = Right;
+			break;
+		case 'k':
+			GameOver = true;
+			break;
+		default:
+			break;
+
 		}
+	}
+
+}
+
+void Logic()
+{
+	switch (dir)
+	{
+	case Up:
+		heady--;
+		break;
+	case Down:
+		heady++;
+		break;
+	case Left:
+		headx--;
+		break;
+	case Right:
+		headx++;
+		break;
+	}
+	if (headx > wall_wdth || headx < 0 || heady > wall_hght || heady < 0)
+	{
+		GameOver = true;
+	}
+	for (int i = 0; i < ntail;++i)
+	{
+		if (headx == tailx[i] && heady == taily[i])
+			GameOver = true;
+	}
+	
+	if (headx == fruitx && heady == fruity)
+	{
+		score += 10;
+		ntail++;
+		fruitx = rand() % (wall_wdth - 5);
+		fruity = rand() % (wall_hght - 5);
+
+	}
+	prevx = tailx[0];
+	prevy = taily[0];
+	tailx[0] = headx;
+	taily[0] = heady;
+	for (int i = 0; i < ntail; ++i)
+	{
+		prev2x = tailx[i];
+		prev2y = taily[i];
+		tailx[i] = prevx;
+		taily[i] = prevy;
+		prevx = prev2x;
+		prevy = prev2y;
 	}
 }
 
-int main() {
+int main()
+{
 	setup();
 
-	while (!gameOver)
+	while (!GameOver)
 	{
-		Sleep(40 ^ 4);
-		Draw();
-		input();
+		Map();
+		Input();
 		Logic();
-
 	}
 }
